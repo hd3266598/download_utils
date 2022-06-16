@@ -41,7 +41,7 @@ abstract class BaseWidgetState<T extends BaseWidget> extends State<T> with Widge
 
   @override
   void initState() {
-    if (kDebugMode) ToastUtils.showToast("/$this");
+    if (kDebugMode) ToastUtils.showToast("/$widget");
     initBaseCommon(this);
     NavigatorManger().addWidget(this);
     WidgetsBinding.instance.addObserver(this);

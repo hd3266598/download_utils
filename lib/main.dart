@@ -1,3 +1,4 @@
+import 'package:download_utils/res/values/PColors.dart';
 import 'package:flutter/material.dart';
 import './ui/page/page.dart';
 
@@ -66,9 +67,8 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Padding(
+        padding: const EdgeInsets.all(10),
         child: Column(
           // Column is also a layout widget. It takes a list of children and
           // arranges them vertically. By default, it sizes itself to fit its
@@ -84,12 +84,23 @@ class _MyHomePageState extends State<MyHomePage> {
           // center the children vertically; the main axis here is the vertical
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, "/BDownload");
-                },
-                child: const Text("B站"))
+            InkWell(
+              onTap: () => Navigator.pushNamed(context, "/BDownload"),
+              child: DecoratedBox(
+                decoration: const BoxDecoration(color: PColors.theme_green, borderRadius: BorderRadius.all(Radius.circular(20))),
+                child: Container(
+                  width: 125,
+                  height: 40,
+                  alignment: Alignment.center,
+                  child: const Text(
+                    "B站",
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            )
           ],
         ),
       ),

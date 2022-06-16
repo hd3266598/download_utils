@@ -48,6 +48,14 @@ dependencies:
 
   #loading
   flutter_easyloading: ^3.0.5
+  #设备信息
+  device_info_plus: ^3.2.3
+  #  音视频合成
+  ffmpeg_kit_flutter: 4.5.1-LTS
+  #html
+  html: ^0.15.0
+  # json注解
+  json_annotation: ^4.1.0
 
 dev_dependencies:
   flutter_test:
