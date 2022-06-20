@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:download_utils/res/values/PColors.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import './ui/page/page.dart';
 
 void main() {
@@ -54,6 +57,12 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   @override
+  initState() {
+    super.initState();
+    _requestPermission();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
@@ -105,5 +114,26 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  // 动态申请权限，ios 要在info.plist 上面添加
+  Future<bool> _requestPermission() async {
+    if (Platform.isIOS) {
+      var status = await Permission.photos.status;
+      if (status.isDenied) {
+        await [
+          Permission.photos,
+        ].request();
+      }
+      return status.isGranted;
+    } else {
+      var status = await Permission.storage.status;
+      if (status.isDenied) {
+        await [
+          Permission.storage,
+        ].request();
+      }
+      return status.isGranted;
+    }
   }
 }

@@ -13,9 +13,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:html/parser.dart' show parse;
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path/path.dart' show basename;
 import 'package:path_provider/path_provider.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:toast/toast.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../model/LocalVideo.dart';
@@ -30,7 +32,7 @@ class BDownloadPage extends BaseWidget {
   }
 }
 
-class _BDownloadState extends BaseWidgetState<BDownloadPage> {
+class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProviderStateMixin {
   //FocusNode
   FocusNode jkNode = FocusNode();
 
@@ -39,6 +41,12 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
 
   //本地视频数据集合
   final List<LocalVideo> _list = [];
+
+  //下载进度
+  ValueNotifier<double> process = ValueNotifier(0);
+
+  //下载的视频和音频
+  ValueNotifier<String> title = ValueNotifier("");
 
   @override
   Widget buildWidget(BuildContext context) {
@@ -54,7 +62,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
               keyboardType: TextInputType.phone,
               controller: jkC,
               decoration: const InputDecoration(
-                  hintText: "输入视频地址",
+                  hintText: "输入视频地址：",
                   border: InputBorder.none,
                   hintStyle: TextStyle(color: PColors.hint_color),
                   filled: true,
@@ -65,10 +73,35 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                   if (kDebugMode) {
                     print(jkC.text);
                   }
-                  String url = "https://b23.tv/MxNCZF0";
-                  _queryInfo(url);
+                  // String url = "https://b23.tv/MxNCZF0";
+                  _queryInfo(jkC.text);
                 },
                 child: const Text("解析"))
+          ],
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: ValueListenableBuilder<double>(
+                  valueListenable: process,
+                  builder: (context, value, child) {
+                    return LinearProgressIndicator(
+                      value: value,
+                    );
+                  }),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            ValueListenableBuilder<String>(
+                valueListenable: title,
+                builder: (context, value, child) {
+                  return Text(value);
+                })
           ],
         ),
         Expanded(
@@ -137,11 +170,28 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                                 decoration: const BoxDecoration(color: PColors.theme_green, borderRadius: BorderRadius.all(Radius.circular(10))),
                                 child: InkWell(
                                   onTap: () async {
+                                    _saveVideo(value.path!);
+                                  },
+                                  child: Container(
+                                    width: 50,
+                                    height: 25,
+                                    alignment: Alignment.center,
+                                    child: const Text("同步相册", style: TextStyle(color: Colors.white)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              DecoratedBox(
+                                decoration: const BoxDecoration(color: PColors.theme_green, borderRadius: BorderRadius.all(Radius.circular(10))),
+                                child: InkWell(
+                                  onTap: () async {
                                     var file = File(value.path!);
                                     if (await file.exists()) {
                                       file.delete();
                                     }
-                                    refreshData();
+                                    _refreshData();
                                   },
                                   child: Container(
                                     width: 50,
@@ -217,19 +267,28 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
     var audioPath = "${dir.path}/$name-audio.mp4";
     var path = "${dir.path}/$name.mp4";
     print("视频路径：$videoPath，音频路径：$audioPath，输出路径：$path");
+    title.value = "视频";
     DownloadFile.download(
         baseUri: realUri,
         url: videoUrl,
         savePath: videoPath,
+        onReceiveProgress: (count, total) {
+          process.value = count / total;
+        },
         done: () {
           print("视频下载完成");
+          title.value = "音频";
           DownloadFile.download(
               baseUri: realUri,
               url: audioUrl,
               savePath: audioPath,
+              onReceiveProgress: (count, total) {
+                process.value = count / total;
+              },
               done: () {
                 print("音频下载完成");
                 print("开始合成");
+                title.value = "合成";
                 var command = "-i $videoPath -i $audioPath  -c copy $path";
                 FFmpegKit.execute(command).then((session) async {
                   final returnCode = await session.getReturnCode();
@@ -238,6 +297,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                   // print(reason);
                   if (ReturnCode.isSuccess(returnCode)) {
                     print("合并成功");
+                    title.value = "成功";
                     var video = File(videoPath);
                     if (await video.exists()) {
                       video.delete();
@@ -246,11 +306,12 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                     if (await audio.exists()) {
                       audio.delete();
                     }
-                    refreshData();
+                    _refreshData();
                   } else if (ReturnCode.isCancel(returnCode)) {
                     print("取消合并");
                   } else {
                     print("合并失败");
+                    title.value = "失败";
                   }
                 });
               });
@@ -262,7 +323,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
     //判断是否是安卓10以上设备
     _judgeTen();
     //刷新本地视频数据
-    refreshData();
+    _refreshData();
   }
 
   @override
@@ -324,7 +385,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
     } else if (Platform.isIOS) {
       ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
       if (data != null) {
-        jkC.text = data.text ?? "";
+        _getInfoByClip(data.text ?? "");
       }
     }
   }
@@ -333,7 +394,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
   _androidBelowTengetClipboardContent() async {
     ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
     if (data != null) {
-      jkC.text = data.text ?? "";
+      _getInfoByClip(data.text ?? "");
     }
   }
 
@@ -343,14 +404,17 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
         FocusScope.of(context).unfocus();
         ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
         if (data != null) {
-          var input = data.text ?? "";
-          jkC.text = RegExp("https?://(?:[-\\w.]|%[\\da-fA-F]{2})+[^\\u4e00-\\u9fa5]+[\\w-_/?&=#%:]{0}").stringMatch(input) ?? "";
+          _getInfoByClip(data.text ?? "");
         }
       }
     });
   }
 
-  refreshData() async {
+  _getInfoByClip(String input) {
+    jkC.text = RegExp("https?://(?:[-\\w.]|%[\\da-fA-F]{2})+[^\\u4e00-\\u9fa5]+[\\w-_/?&=#%:]{0}").stringMatch(input) ?? "";
+  }
+
+  _refreshData() async {
     _list.clear();
     var externalFilesDir = await getApplicationSupportDirectory();
     externalFilesDir.listSync().forEach((element) {
@@ -358,5 +422,13 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
       _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path));
     });
     setState(() {});
+  }
+
+  // 保存视频
+  _saveVideo(String path) async {
+    final result = await ImageGallerySaver.saveFile(path);
+    if (result['isSuccess']) {
+      Toast.show("保存视频成功，保存路径为${result['filePath']}", duration: Toast.lengthShort, gravity: Toast.bottom);
+    }
   }
 }
