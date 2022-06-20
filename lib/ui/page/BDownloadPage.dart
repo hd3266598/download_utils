@@ -1,14 +1,24 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:download_utils/base/_base_widget.dart';
 import 'package:download_utils/model/VideoBean.dart';
+import 'package:download_utils/ui/page/page.dart';
+import 'package:download_utils/utils/common/DownloadFile.dart';
+import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:html/parser.dart' show parse;
+import 'package:path/path.dart' show basename;
+import 'package:path_provider/path_provider.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
+import '../../model/LocalVideo.dart';
 import '../../res/values/PColors.dart';
 
 class BDownloadPage extends BaseWidget {
@@ -21,17 +31,19 @@ class BDownloadPage extends BaseWidget {
 }
 
 class _BDownloadState extends BaseWidgetState<BDownloadPage> {
-  final Dio _dio = Dio();
-
   //FocusNode
   FocusNode jkNode = FocusNode();
 
   //文本框controller
   TextEditingController jkC = TextEditingController();
 
+  //本地视频数据集合
+  final List<LocalVideo> _list = [];
+
   @override
   Widget buildWidget(BuildContext context) {
     return Container(
+      color: Colors.white,
       padding: const EdgeInsets.all(10),
       child: Column(children: [
         Row(
@@ -58,18 +70,122 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                 },
                 child: const Text("解析"))
           ],
-        )
+        ),
+        Expanded(
+            child: ListView.separated(
+                padding: const EdgeInsets.only(top: 0),
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  var value = _list[index];
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      FutureBuilder<Uint8List?>(
+                        builder: (context, snapshot) {
+                          if (snapshot.data != null) {
+                            return Center(
+                              child: SizedBox(
+                                width: 150,
+                                height: 150,
+                                child: Image.memory(snapshot.data!),
+                              ),
+                            );
+                          } else {
+                            return const Text("加载失败");
+                          }
+                        },
+                        future: _loadThumbnail(value.path ?? ""),
+                      ),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Expanded(
+                          child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(value.title ?? ""),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Row(
+                            children: [
+                              DecoratedBox(
+                                decoration: const BoxDecoration(color: PColors.theme_green, borderRadius: BorderRadius.all(Radius.circular(10))),
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => VideoPage(
+                                            path: value.path ?? "",
+                                          ),
+                                        ));
+                                  },
+                                  child: Container(
+                                    width: 50,
+                                    height: 25,
+                                    alignment: Alignment.center,
+                                    child: const Text("播放", style: TextStyle(color: Colors.white)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              DecoratedBox(
+                                decoration: const BoxDecoration(color: PColors.theme_green, borderRadius: BorderRadius.all(Radius.circular(10))),
+                                child: InkWell(
+                                  onTap: () async {
+                                    var file = File(value.path!);
+                                    if (await file.exists()) {
+                                      file.delete();
+                                    }
+                                    refreshData();
+                                  },
+                                  child: Container(
+                                    width: 50,
+                                    height: 25,
+                                    alignment: Alignment.center,
+                                    child: const Text("删除", style: TextStyle(color: Colors.white)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      ))
+                    ],
+                  );
+                },
+                separatorBuilder: (context, index) {
+                  return const Divider(
+                    height: 1,
+                  );
+                },
+                itemCount: _list.length))
       ]),
     );
   }
 
+  Future<Uint8List?> _loadThumbnail(String path) async {
+    return await VideoThumbnail.thumbnailData(
+      video: path,
+      imageFormat: ImageFormat.JPEG,
+      maxWidth: 150,
+      // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
+      maxHeight: 150,
+      quality: 100,
+    );
+  }
+
   _queryInfo(String url) async {
-    Response data = await _dio.get(url);
-    var realUri = data.requestOptions.uri;
-    Response response = await _dio.getUri(realUri);
+    Response data = await DownloadFile.getDio().get(url);
+    var realUri = data.redirects.first.location;
+    Response response = await DownloadFile.getDio().getUri(realUri);
     var document = parse(response.data);
     var title = document.querySelector("title");
-    var name = title?.text;
+    var name = title?.text.trim() ?? "";
     var elements = document.querySelectorAll("script");
     for (var element in elements) {
       if (element.hasChildNodes()) {
@@ -77,21 +193,76 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
         var data = element.firstChild?.text;
         if (data != null && data.contains(tag) == true) {
           var info = data.substring(tag.length, data.length);
-          var bean = VideoBean.fromJson(info);
-          _download(name, realUri, bean.data);
+          var bean = VideoBean.fromJson(jsonDecode(info));
+          if (bean.data != null) {
+            _download(name, realUri, bean.data!);
+          }
         }
       }
     }
   }
 
-  _download(String? name, Uri? realUri, Data? data) {
+  _download(String name, Uri realUri, Data data, [int accQuality = 0]) {
+    var quality = data.acceptDescription![accQuality];
+    var duration = data.dash?.duration ?? 0;
+    var videoUrl = data.dash?.video![accQuality].baseUrl ?? "";
+    var audioUrl = data.dash?.audio![accQuality].baseUrl ?? "";
+    print("当前视频清晰度为{$quality}，时长{${duration / 60}}分{${duration % 60}}秒");
+    _downloadSingle(name, realUri, videoUrl, audioUrl);
+  }
 
+  _downloadSingle(String name, Uri realUri, String videoUrl, String audioUrl) async {
+    var dir = await getApplicationSupportDirectory();
+    var videoPath = "${dir.path}/$name-video.mp4";
+    var audioPath = "${dir.path}/$name-audio.mp4";
+    var path = "${dir.path}/$name.mp4";
+    print("视频路径：$videoPath，音频路径：$audioPath，输出路径：$path");
+    DownloadFile.download(
+        baseUri: realUri,
+        url: videoUrl,
+        savePath: videoPath,
+        done: () {
+          print("视频下载完成");
+          DownloadFile.download(
+              baseUri: realUri,
+              url: audioUrl,
+              savePath: audioPath,
+              done: () {
+                print("音频下载完成");
+                print("开始合成");
+                var command = "-i $videoPath -i $audioPath  -c copy $path";
+                FFmpegKit.execute(command).then((session) async {
+                  final returnCode = await session.getReturnCode();
+                  // final reason = await session.getFailStackTrace();
+                  // print(returnCode);
+                  // print(reason);
+                  if (ReturnCode.isSuccess(returnCode)) {
+                    print("合并成功");
+                    var video = File(videoPath);
+                    if (await video.exists()) {
+                      video.delete();
+                    }
+                    var audio = File(audioPath);
+                    if (await audio.exists()) {
+                      audio.delete();
+                    }
+                    refreshData();
+                  } else if (ReturnCode.isCancel(returnCode)) {
+                    print("取消合并");
+                  } else {
+                    print("合并失败");
+                  }
+                });
+              });
+        });
   }
 
   @override
   void onCreate() {
     //判断是否是安卓10以上设备
     _judgeTen();
+    //刷新本地视频数据
+    refreshData();
   }
 
   @override
@@ -172,9 +343,20 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
         FocusScope.of(context).unfocus();
         ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
         if (data != null) {
-          jkC.text = data.text ?? "";
+          var input = data.text ?? "";
+          jkC.text = RegExp("https?://(?:[-\\w.]|%[\\da-fA-F]{2})+[^\\u4e00-\\u9fa5]+[\\w-_/?&=#%:]{0}").stringMatch(input) ?? "";
         }
       }
     });
+  }
+
+  refreshData() async {
+    _list.clear();
+    var externalFilesDir = await getApplicationSupportDirectory();
+    externalFilesDir.listSync().forEach((element) {
+      var name = basename(element.path);
+      _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path));
+    });
+    setState(() {});
   }
 }

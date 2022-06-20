@@ -2,3 +2,4 @@
 library page;
 
 export './BDownloadPage.dart';
+export './VideoPage.dart';
