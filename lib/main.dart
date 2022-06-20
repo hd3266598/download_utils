@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:download_utils/res/values/PColors.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:toast/toast.dart';
 import './ui/page/page.dart';
 
 void main() {
@@ -64,6 +65,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    //
+    ToastContext().init(context);
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //

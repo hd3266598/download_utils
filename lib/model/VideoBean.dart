@@ -289,7 +289,7 @@ class Volume {
   Volume({
     double? measuredI,
     double? measuredLra,
-    int? measuredTp,
+    double? measuredTp,
     double? measuredThreshold,
     double? targetOffset,
     int? targetI,
@@ -316,7 +316,7 @@ class Volume {
 
   double? _measuredI;
   double? _measuredLra;
-  int? _measuredTp;
+  double? _measuredTp;
   double? _measuredThreshold;
   double? _targetOffset;
   int? _targetI;
@@ -325,7 +325,7 @@ class Volume {
   Volume copyWith({
     double? measuredI,
     double? measuredLra,
-    int? measuredTp,
+    double? measuredTp,
     double? measuredThreshold,
     double? targetOffset,
     int? targetI,
@@ -345,7 +345,7 @@ class Volume {
 
   double? get measuredLra => _measuredLra;
 
-  int? get measuredTp => _measuredTp;
+  double? get measuredTp => _measuredTp;
 
   double? get measuredThreshold => _measuredThreshold;
 

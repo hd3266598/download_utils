@@ -176,7 +176,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
                                     width: 50,
                                     height: 25,
                                     alignment: Alignment.center,
-                                    child: const Text("同步相册", style: TextStyle(color: Colors.white)),
+                                    child: const Text("同步", style: TextStyle(color: Colors.white)),
                                   ),
                                 ),
                               ),
