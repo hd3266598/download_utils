@@ -236,6 +236,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
     var document = parse(response.data);
     var title = document.querySelector("title");
     var name = title?.text.trim() ?? "";
+    name = name.replaceAll(RegExp("[`~!@#%^&*()+=|{}':;'\\[\\].<>/?~！@#￥%……&*（）——+|{}【】'；：”“’。、？]"), "");
     var elements = document.querySelectorAll("script");
     for (var element in elements) {
       if (element.hasChildNodes()) {
@@ -262,7 +263,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
   }
 
   _downloadSingle(String name, Uri realUri, String videoUrl, String audioUrl) async {
-    var dir = await getApplicationSupportDirectory();
+    var dir = await getTemporaryDirectory();
     var videoPath = "${dir.path}/$name-video.mp4";
     var audioPath = "${dir.path}/$name-audio.mp4";
     var path = "${dir.path}/$name.mp4";
@@ -289,7 +290,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
                 print("音频下载完成");
                 print("开始合成");
                 title.value = "合成";
-                var command = "-i $videoPath -i $audioPath  -c copy $path";
+                var command = "-i $videoPath -i $audioPath  -c copy $path -y";
                 FFmpegKit.execute(command).then((session) async {
                   final returnCode = await session.getReturnCode();
                   // final reason = await session.getFailStackTrace();
@@ -416,10 +417,12 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
 
   _refreshData() async {
     _list.clear();
-    var externalFilesDir = await getApplicationSupportDirectory();
+    var externalFilesDir = await getTemporaryDirectory();
     externalFilesDir.listSync().forEach((element) {
       var name = basename(element.path);
-      _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path));
+      if (name.contains(".mp4")) {
+        _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path));
+      }
     });
     setState(() {});
   }

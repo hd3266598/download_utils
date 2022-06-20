@@ -12,9 +12,9 @@ String videoBeanToJson(VideoBean data) => json.encode(data.toJson());
 
 class VideoBean {
   VideoBean({
-    int? code,
+    num? code,
     String? message,
-    int? ttl,
+    num? ttl,
     Data? data,
     String? session,
   }) {
@@ -33,16 +33,16 @@ class VideoBean {
     _session = json['session'];
   }
 
-  int? _code;
+  num? _code;
   String? _message;
-  int? _ttl;
+  num? _ttl;
   Data? _data;
   String? _session;
 
   VideoBean copyWith({
-    int? code,
+    num? code,
     String? message,
-    int? ttl,
+    num? ttl,
     Data? data,
     String? session,
   }) =>
@@ -54,11 +54,11 @@ class VideoBean {
         session: session ?? _session,
       );
 
-  int? get code => _code;
+  num? get code => _code;
 
   String? get message => _message;
 
-  int? get ttl => _ttl;
+  num? get ttl => _ttl;
 
   Data? get data => _data;
 
@@ -103,13 +103,13 @@ class Data {
     String? from,
     String? result,
     String? message,
-    int? quality,
+    num? quality,
     String? format,
-    int? timelength,
+    num? timelength,
     String? acceptFormat,
     List<String>? acceptDescription,
-    List<int>? acceptQuality,
-    int? videoCodecid,
+    List<num>? acceptQuality,
+    num? videoCodecid,
     String? seekParam,
     String? seekType,
     Dash? dash,
@@ -144,7 +144,7 @@ class Data {
     _timelength = json['timelength'];
     _acceptFormat = json['accept_format'];
     _acceptDescription = json['accept_description'] != null ? json['accept_description'].cast<String>() : [];
-    _acceptQuality = json['accept_quality'] != null ? json['accept_quality'].cast<int>() : [];
+    _acceptQuality = json['accept_quality'] != null ? json['accept_quality'].cast<num>() : [];
     _videoCodecid = json['video_codecid'];
     _seekParam = json['seek_param'];
     _seekType = json['seek_type'];
@@ -162,13 +162,13 @@ class Data {
   String? _from;
   String? _result;
   String? _message;
-  int? _quality;
+  num? _quality;
   String? _format;
-  int? _timelength;
+  num? _timelength;
   String? _acceptFormat;
   List<String>? _acceptDescription;
-  List<int>? _acceptQuality;
-  int? _videoCodecid;
+  List<num>? _acceptQuality;
+  num? _videoCodecid;
   String? _seekParam;
   String? _seekType;
   Dash? _dash;
@@ -180,13 +180,13 @@ class Data {
     String? from,
     String? result,
     String? message,
-    int? quality,
+    num? quality,
     String? format,
-    int? timelength,
+    num? timelength,
     String? acceptFormat,
     List<String>? acceptDescription,
-    List<int>? acceptQuality,
-    int? videoCodecid,
+    List<num>? acceptQuality,
+    num? videoCodecid,
     String? seekParam,
     String? seekType,
     Dash? dash,
@@ -219,19 +219,19 @@ class Data {
 
   String? get message => _message;
 
-  int? get quality => _quality;
+  num? get quality => _quality;
 
   String? get format => _format;
 
-  int? get timelength => _timelength;
+  num? get timelength => _timelength;
 
   String? get acceptFormat => _acceptFormat;
 
   List<String>? get acceptDescription => _acceptDescription;
 
-  List<int>? get acceptQuality => _acceptQuality;
+  List<num>? get acceptQuality => _acceptQuality;
 
-  int? get videoCodecid => _videoCodecid;
+  num? get videoCodecid => _videoCodecid;
 
   String? get seekParam => _seekParam;
 
@@ -287,13 +287,13 @@ String volumeToJson(Volume data) => json.encode(data.toJson());
 
 class Volume {
   Volume({
-    double? measuredI,
-    double? measuredLra,
-    double? measuredTp,
-    double? measuredThreshold,
-    double? targetOffset,
-    int? targetI,
-    int? targetTp,
+    num? measuredI,
+    num? measuredLra,
+    num? measuredTp,
+    num? measuredThreshold,
+    num? targetOffset,
+    num? targetI,
+    num? targetTp,
   }) {
     _measuredI = measuredI;
     _measuredLra = measuredLra;
@@ -314,22 +314,22 @@ class Volume {
     _targetTp = json['target_tp'];
   }
 
-  double? _measuredI;
-  double? _measuredLra;
-  double? _measuredTp;
-  double? _measuredThreshold;
-  double? _targetOffset;
-  int? _targetI;
-  int? _targetTp;
+  num? _measuredI;
+  num? _measuredLra;
+  num? _measuredTp;
+  num? _measuredThreshold;
+  num? _targetOffset;
+  num? _targetI;
+  num? _targetTp;
 
   Volume copyWith({
-    double? measuredI,
-    double? measuredLra,
-    double? measuredTp,
-    double? measuredThreshold,
-    double? targetOffset,
-    int? targetI,
-    int? targetTp,
+    num? measuredI,
+    num? measuredLra,
+    num? measuredTp,
+    num? measuredThreshold,
+    num? targetOffset,
+    num? targetI,
+    num? targetTp,
   }) =>
       Volume(
         measuredI: measuredI ?? _measuredI,
@@ -341,19 +341,19 @@ class Volume {
         targetTp: targetTp ?? _targetTp,
       );
 
-  double? get measuredI => _measuredI;
+  num? get measuredI => _measuredI;
 
-  double? get measuredLra => _measuredLra;
+  num? get measuredLra => _measuredLra;
 
-  double? get measuredTp => _measuredTp;
+  num? get measuredTp => _measuredTp;
 
-  double? get measuredThreshold => _measuredThreshold;
+  num? get measuredThreshold => _measuredThreshold;
 
-  double? get targetOffset => _targetOffset;
+  num? get targetOffset => _targetOffset;
 
-  int? get targetI => _targetI;
+  num? get targetI => _targetI;
 
-  int? get targetTp => _targetTp;
+  num? get targetTp => _targetTp;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -381,7 +381,7 @@ String supportFormatsToJson(SupportFormats data) => json.encode(data.toJson());
 
 class SupportFormats {
   SupportFormats({
-    int? quality,
+    num? quality,
     String? format,
     String? newDescription,
     String? displayDesc,
@@ -405,7 +405,7 @@ class SupportFormats {
     _codecs = json['codecs'] != null ? json['codecs'].cast<String>() : [];
   }
 
-  int? _quality;
+  num? _quality;
   String? _format;
   String? _newDescription;
   String? _displayDesc;
@@ -413,7 +413,7 @@ class SupportFormats {
   List<String>? _codecs;
 
   SupportFormats copyWith({
-    int? quality,
+    num? quality,
     String? format,
     String? newDescription,
     String? displayDesc,
@@ -429,7 +429,7 @@ class SupportFormats {
         codecs: codecs ?? _codecs,
       );
 
-  int? get quality => _quality;
+  num? get quality => _quality;
 
   String? get format => _format;
 
@@ -466,8 +466,8 @@ String dashToJson(Dash data) => json.encode(data.toJson());
 
 class Dash {
   Dash({
-    int? duration,
-    double? minBufferTime,
+    num? duration,
+    num? minBufferTime,
     List<Video>? video,
     List<Audio>? audio,
     dynamic dolby,
@@ -499,15 +499,15 @@ class Dash {
     _dolby = json['dolby'];
   }
 
-  int? _duration;
-  double? _minBufferTime;
+  num? _duration;
+  num? _minBufferTime;
   List<Video>? _video;
   List<Audio>? _audio;
   dynamic _dolby;
 
   Dash copyWith({
-    int? duration,
-    double? minBufferTime,
+    num? duration,
+    num? minBufferTime,
     List<Video>? video,
     List<Audio>? audio,
     dynamic dolby,
@@ -520,9 +520,9 @@ class Dash {
         dolby: dolby ?? _dolby,
       );
 
-  int? get duration => _duration;
+  num? get duration => _duration;
 
-  double? get minBufferTime => _minBufferTime;
+  num? get minBufferTime => _minBufferTime;
 
   List<Video>? get video => _video;
 
@@ -572,19 +572,19 @@ String audioToJson(Audio data) => json.encode(data.toJson());
 
 class Audio {
   Audio({
-    int? id,
+    num? id,
     String? baseUrl,
     List<String>? backupUrl,
-    int? bandwidth,
+    num? bandwidth,
     String? mimeType,
     String? codecs,
-    int? width,
-    int? height,
+    num? width,
+    num? height,
     String? frameRate,
     String? sar,
-    int? startWithSap,
+    num? startWithSap,
     SegmentBase? segmentBase,
-    int? codecid,
+    num? codecid,
   }) {
     _id = id;
     _baseUrl = baseUrl;
@@ -629,34 +629,34 @@ class Audio {
     _codecid = json['codecid'];
   }
 
-  int? _id;
+  num? _id;
   String? _baseUrl;
   List<String>? _backupUrl;
-  int? _bandwidth;
+  num? _bandwidth;
   String? _mimeType;
   String? _codecs;
-  int? _width;
-  int? _height;
+  num? _width;
+  num? _height;
   String? _frameRate;
   String? _sar;
-  int? _startWithSap;
+  num? _startWithSap;
   SegmentBase? _segmentBase;
-  int? _codecid;
+  num? _codecid;
 
   Audio copyWith({
-    int? id,
+    num? id,
     String? baseUrl,
     List<String>? backupUrl,
-    int? bandwidth,
+    num? bandwidth,
     String? mimeType,
     String? codecs,
-    int? width,
-    int? height,
+    num? width,
+    num? height,
     String? frameRate,
     String? sar,
-    int? startWithSap,
+    num? startWithSap,
     SegmentBase? segmentBase,
-    int? codecid,
+    num? codecid,
   }) =>
       Audio(
         id: id ?? _id,
@@ -674,31 +674,31 @@ class Audio {
         codecid: codecid ?? _codecid,
       );
 
-  int? get id => _id;
+  num? get id => _id;
 
   String? get baseUrl => _baseUrl;
 
   List<String>? get backupUrl => _backupUrl;
 
-  int? get bandwidth => _bandwidth;
+  num? get bandwidth => _bandwidth;
 
   String? get mimeType => _mimeType;
 
   String? get codecs => _codecs;
 
-  int? get width => _width;
+  num? get width => _width;
 
-  int? get height => _height;
+  num? get height => _height;
 
   String? get frameRate => _frameRate;
 
   String? get sar => _sar;
 
-  int? get startWithSap => _startWithSap;
+  num? get startWithSap => _startWithSap;
 
   SegmentBase? get segmentBase => _segmentBase;
 
-  int? get codecid => _codecid;
+  num? get codecid => _codecid;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
@@ -800,19 +800,19 @@ String videoToJson(Video data) => json.encode(data.toJson());
 
 class Video {
   Video({
-    int? id,
+    num? id,
     String? baseUrl,
     List<String>? backupUrl,
-    int? bandwidth,
+    num? bandwidth,
     String? mimeType,
     String? codecs,
-    int? width,
-    int? height,
+    num? width,
+    num? height,
     String? frameRate,
     String? sar,
-    int? startWithSap,
+    num? startWithSap,
     SegmentBase? segmentBase,
-    int? codecid,
+    num? codecid,
   }) {
     _id = id;
     _baseUrl = baseUrl;
@@ -857,34 +857,34 @@ class Video {
     _codecid = json['codecid'];
   }
 
-  int? _id;
+  num? _id;
   String? _baseUrl;
   List<String>? _backupUrl;
-  int? _bandwidth;
+  num? _bandwidth;
   String? _mimeType;
   String? _codecs;
-  int? _width;
-  int? _height;
+  num? _width;
+  num? _height;
   String? _frameRate;
   String? _sar;
-  int? _startWithSap;
+  num? _startWithSap;
   SegmentBase? _segmentBase;
-  int? _codecid;
+  num? _codecid;
 
   Video copyWith({
-    int? id,
+    num? id,
     String? baseUrl,
     List<String>? backupUrl,
-    int? bandwidth,
+    num? bandwidth,
     String? mimeType,
     String? codecs,
-    int? width,
-    int? height,
+    num? width,
+    num? height,
     String? frameRate,
     String? sar,
-    int? startWithSap,
+    num? startWithSap,
     SegmentBase? segmentBase,
-    int? codecid,
+    num? codecid,
   }) =>
       Video(
         id: id ?? _id,
@@ -902,31 +902,31 @@ class Video {
         codecid: codecid ?? _codecid,
       );
 
-  int? get id => _id;
+  num? get id => _id;
 
   String? get baseUrl => _baseUrl;
 
   List<String>? get backupUrl => _backupUrl;
 
-  int? get bandwidth => _bandwidth;
+  num? get bandwidth => _bandwidth;
 
   String? get mimeType => _mimeType;
 
   String? get codecs => _codecs;
 
-  int? get width => _width;
+  num? get width => _width;
 
-  int? get height => _height;
+  num? get height => _height;
 
   String? get frameRate => _frameRate;
 
   String? get sar => _sar;
 
-  int? get startWithSap => _startWithSap;
+  num? get startWithSap => _startWithSap;
 
   SegmentBase? get segmentBase => _segmentBase;
 
-  int? get codecid => _codecid;
+  num? get codecid => _codecid;
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{};
