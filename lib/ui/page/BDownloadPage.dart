@@ -268,7 +268,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
     var audioPath = "${dir.path}/$name-audio.mp4";
     var path = "${dir.path}/$name.mp4";
     print("视频路径：$videoPath，音频路径：$audioPath，输出路径：$path");
-    title.value = "视频";
+    title.value = "解析视频";
     DownloadFile.download(
         baseUri: realUri,
         url: videoUrl,
@@ -278,7 +278,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
         },
         done: () {
           print("视频下载完成");
-          title.value = "音频";
+          title.value = "解析音频";
           DownloadFile.download(
               baseUri: realUri,
               url: audioUrl,
@@ -289,7 +289,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
               done: () {
                 print("音频下载完成");
                 print("开始合成");
-                title.value = "合成";
+                title.value = "音视频合成";
                 var command = "-i $videoPath -i $audioPath  -c copy $path -y";
                 FFmpegKit.execute(command).then((session) async {
                   final returnCode = await session.getReturnCode();
@@ -298,7 +298,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
                   // print(reason);
                   if (ReturnCode.isSuccess(returnCode)) {
                     print("合并成功");
-                    title.value = "成功";
+                    title.value = "合成完毕";
                     var video = File(videoPath);
                     if (await video.exists()) {
                       video.delete();
@@ -312,7 +312,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
                     print("取消合并");
                   } else {
                     print("合并失败");
-                    title.value = "失败";
+                    title.value = "合成失败";
                   }
                 });
               });
