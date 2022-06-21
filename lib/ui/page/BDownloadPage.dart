@@ -259,7 +259,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
   }
 
   _downloadSingle(String name, Uri realUri, String videoUrl, String audioUrl) async {
-    var dir = await getTemporaryDirectory();
+    var dir = await getApplicationDocumentsDirectory();
     var videoPath = "${dir.path}/$name-video.mp4";
     var audioPath = "${dir.path}/$name-audio.mp4";
     var path = "${dir.path}/$name.mp4";
@@ -413,7 +413,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
   }
 
   _refreshData() async {
-    var externalFilesDir = await getTemporaryDirectory();
+    var externalFilesDir = await getApplicationDocumentsDirectory();
     for (var element in externalFilesDir.listSync()) {
       var name = basename(element.path);
       if (name.contains(".mp4") && !_list.any((element) => element.title == name)) {
