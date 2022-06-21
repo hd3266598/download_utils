@@ -80,7 +80,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
           ],
         ),
         const SizedBox(
-          height: 10,
+          height: 5,
         ),
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -104,6 +104,9 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
                 })
           ],
         ),
+        const SizedBox(
+          height: 5,
+        ),
         Expanded(
             child: ListView.separated(
                 padding: const EdgeInsets.only(top: 0),
@@ -113,21 +116,12 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      FutureBuilder<Uint8List?>(
-                        builder: (context, snapshot) {
-                          if (snapshot.data != null) {
-                            return Center(
-                              child: SizedBox(
-                                width: 150,
-                                height: 150,
-                                child: Image.memory(snapshot.data!),
-                              ),
-                            );
-                          } else {
-                            return const Text("加载失败");
-                          }
-                        },
-                        future: _loadThumbnail(value.path ?? ""),
+                      Center(
+                        child: SizedBox(
+                          width: 150,
+                          height: 150,
+                          child: Image.memory(value.bitmap!),
+                        ),
                       ),
                       const SizedBox(
                         width: 10,
@@ -265,7 +259,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
   }
 
   _downloadSingle(String name, Uri realUri, String videoUrl, String audioUrl) async {
-    var dir = await getTemporaryDirectory();
+    var dir = await getApplicationSupportDirectory();
     var videoPath = "${dir.path}/$name-video.mp4";
     var audioPath = "${dir.path}/$name-audio.mp4";
     var path = "${dir.path}/$name.mp4";
@@ -309,9 +303,8 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
                     if (await audio.exists()) {
                       await audio.delete();
                     }
-                    setState(() {
-                      _list.add(LocalVideo(name, path));
-                    });
+                    _list.add(LocalVideo(name, path, await _loadThumbnail(path)));
+                    setState(() {});
                   } else if (ReturnCode.isCancel(returnCode)) {
                     print("取消合并");
                   } else {
@@ -420,15 +413,15 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
   }
 
   _refreshData() async {
-    var externalFilesDir = await getTemporaryDirectory();
-    setState(() {
-      externalFilesDir.listSync().reversed.forEach((element) {
-        var name = basename(element.path);
-        if (name.contains(".mp4") && !_list.any((element) => element.title == name)) {
-          _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path));
-        }
-      });
-    });
+    var externalFilesDir = await getApplicationSupportDirectory();
+    for (var element in externalFilesDir.listSync()) {
+      var name = basename(element.path);
+      if (name.contains(".mp4") && !_list.any((element) => element.title == name)) {
+        var bitmap = await _loadThumbnail(element.path);
+        _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path, bitmap));
+      }
+    }
+    setState(() {});
   }
 
   // 保存视频
