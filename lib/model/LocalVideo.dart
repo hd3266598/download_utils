@@ -7,11 +7,7 @@ class LocalVideo extends ChangeNotifier {
   String? _path;
   Uint8List? _bitmap;
 
-  LocalVideo([
-    String? message,
-    String? session,
-    Uint8List? bitmap
-  ]) {
+  LocalVideo([String? message, String? session, Uint8List? bitmap]) {
     _title = message;
     _path = session;
     _bitmap = bitmap;
@@ -21,5 +17,5 @@ class LocalVideo extends ChangeNotifier {
 
   String? get path => _path;
 
-  Uint8List? get bitmap => _bitmap;
+  Uint8List get bitmap => _bitmap ?? Uint8List(0);
 }

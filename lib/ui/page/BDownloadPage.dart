@@ -120,7 +120,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                         child: SizedBox(
                           width: 150,
                           height: 150,
-                          child: Image.memory(value.bitmap!),
+                          child: Image.memory(value.bitmap),
                         ),
                       ),
                       const SizedBox(
@@ -259,7 +259,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
   }
 
   _downloadSingle(String name, Uri realUri, String videoUrl, String audioUrl) async {
-    var dir = await getApplicationSupportDirectory();
+    var dir = await getTemporaryDirectory();
     var videoPath = "${dir.path}/$name-video.mp4";
     var audioPath = "${dir.path}/$name-audio.mp4";
     var path = "${dir.path}/$name.mp4";
@@ -413,7 +413,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
   }
 
   _refreshData() async {
-    var externalFilesDir = await getApplicationSupportDirectory();
+    var externalFilesDir = await getTemporaryDirectory();
     for (var element in externalFilesDir.listSync()) {
       var name = basename(element.path);
       if (name.contains(".mp4") && !_list.any((element) => element.title == name)) {
