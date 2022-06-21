@@ -8,6 +8,7 @@ import 'package:download_utils/base/_base_widget.dart';
 import 'package:download_utils/model/VideoBean.dart';
 import 'package:download_utils/ui/page/page.dart';
 import 'package:download_utils/utils/common/DownloadFile.dart';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,6 @@ import 'package:html/parser.dart' show parse;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path/path.dart' show basename;
 import 'package:path_provider/path_provider.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:toast/toast.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
@@ -32,7 +32,7 @@ class BDownloadPage extends BaseWidget {
   }
 }
 
-class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProviderStateMixin {
+class _BDownloadState extends BaseWidgetState<BDownloadPage> {
   //FocusNode
   FocusNode jkNode = FocusNode();
 
