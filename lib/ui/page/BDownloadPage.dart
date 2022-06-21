@@ -191,7 +191,9 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
                                     if (await file.exists()) {
                                       file.delete();
                                     }
-                                    _refreshData();
+                                    setState(() {
+                                      _list.remove(value);
+                                    });
                                   },
                                   child: Container(
                                     width: 50,
@@ -301,13 +303,15 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
                     title.value = "合成完毕";
                     var video = File(videoPath);
                     if (await video.exists()) {
-                      video.delete();
+                      await video.delete();
                     }
                     var audio = File(audioPath);
                     if (await audio.exists()) {
-                      audio.delete();
+                      await audio.delete();
                     }
-                    _refreshData();
+                    setState(() {
+                      _list.add(LocalVideo(name, path));
+                    });
                   } else if (ReturnCode.isCancel(returnCode)) {
                     print("取消合并");
                   } else {
@@ -416,15 +420,15 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
   }
 
   _refreshData() async {
-    _list.clear();
     var externalFilesDir = await getTemporaryDirectory();
-    externalFilesDir.listSync().reversed.forEach((element) {
-      var name = basename(element.path);
-      if (name.contains(".mp4")) {
-        _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path));
-      }
+    setState(() {
+      externalFilesDir.listSync().reversed.forEach((element) {
+        var name = basename(element.path);
+        if (name.contains(".mp4") && !_list.any((element) => element.title == name)) {
+          _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path));
+        }
+      });
     });
-    setState(() {});
   }
 
   // 保存视频
