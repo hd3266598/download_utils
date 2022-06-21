@@ -235,8 +235,8 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
     Response response = await DownloadFile.getDio().getUri(realUri);
     var document = parse(response.data);
     var title = document.querySelector("title");
-    var name = title?.text.trim() ?? "";
-    name = name.replaceAll(RegExp("[`~!@#%^&*()+=|{}':;'\\[\\].<>/?~！@#￥%……&*（）——+|{}【】'；：”“’。、？]"), "");
+    var name = title?.text.replaceAll(" ", "");
+    name = name?.replaceAll(RegExp("[`~!@#%^&*()+=|{}':;'\\[\\].<>/?~！@#￥%……&*（）——+|{}【】'；：”“’。、？]"), "") ?? "";
     var elements = document.querySelectorAll("script");
     for (var element in elements) {
       if (element.hasChildNodes()) {
