@@ -418,7 +418,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> with TickerProvider
   _refreshData() async {
     _list.clear();
     var externalFilesDir = await getTemporaryDirectory();
-    externalFilesDir.listSync().forEach((element) {
+    externalFilesDir.listSync().reversed.forEach((element) {
       var name = basename(element.path);
       if (name.contains(".mp4")) {
         _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path));
