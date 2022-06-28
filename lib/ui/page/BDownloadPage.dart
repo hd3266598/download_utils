@@ -428,9 +428,12 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
     var externalFilesDir = await getApplicationDocumentsDirectory();
     for (var element in externalFilesDir.listSync()) {
       var name = basename(element.path);
-      if (name.contains(".mp4") && !_list.any((element) => name.contains(element.title!))) {
-        var bitmap = await _loadThumbnail(element.path);
-        _list.add(LocalVideo(name.substring(0, name.length - ".mp4".length), element.path, bitmap));
+      if (name.contains(".mp4")) {
+        var title = name.substring(0, name.length - ".mp4".length);
+        if (!_list.any((element) => element.title == title)) {
+          var bitmap = await _loadThumbnail(element.path);
+          _list.add(LocalVideo(title, element.path, bitmap));
+        }
       }
     }
     setState(() {});
