@@ -74,7 +74,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                     print(jkC.text);
                   }
                   // String url = "https://b23.tv/MxNCZF0";
-                  _queryInfo("https://b23.tv/MxNCZF0");
+                  _queryInfo(jkC.text);
                 },
                 child: const Text("解析"))
           ],
