@@ -74,7 +74,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                     print(jkC.text);
                   }
                   // String url = "https://b23.tv/MxNCZF0";
-                  _queryInfo(jkC.text);
+                  _queryInfo("https://b23.tv/MxNCZF0");
                 },
                 child: const Text("解析"))
           ],
@@ -89,19 +89,31 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
               child: ValueListenableBuilder<double>(
                   valueListenable: process,
                   builder: (context, value, child) {
-                    return LinearProgressIndicator(
-                      value: value,
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        LinearProgressIndicator(
+                          minHeight: 20,
+                          value: value,
+                        ),
+                        Text("${(value * 100).toStringAsFixed(2)}%")
+                      ],
                     );
                   }),
             ),
             const SizedBox(
               width: 10,
             ),
-            ValueListenableBuilder<String>(
-                valueListenable: title,
-                builder: (context, value, child) {
-                  return Text(value);
-                })
+            SizedBox(
+              width: 70,
+              child: Center(
+                child: ValueListenableBuilder<String>(
+                    valueListenable: title,
+                    builder: (context, value, child) {
+                      return Text(value);
+                    }),
+              ),
+            ),
           ],
         ),
         const SizedBox(
