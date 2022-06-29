@@ -12,9 +12,11 @@ import 'package:download_utils/ui/page/page.dart';
 import 'package:download_utils/utils/common/DownloadFile.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path/path.dart' show basename;
@@ -56,6 +58,8 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
 //定义一个newIsolateSendPort, 该newIsolateSendPort需要让rootIsolate持有，
 //这样在rootIsolate中就能利用newIsolateSendPort向newIsolate发送消息
   late SendPort newIsolateSendPort;
+
+  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   Widget buildWidget(BuildContext context) {
@@ -291,6 +295,8 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
     _refreshData();
     //
     establishConn();
+    //初始化通知
+    initNotification();
   }
 
   @override
@@ -359,6 +365,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
         if (await audio.exists()) {
           await audio.delete();
         }
+        notification(downloadBean.name);
         _list.add(LocalVideo(downloadBean.name, downloadBean.path, await _loadThumbnail(downloadBean.path)));
         setState(() {});
       } else if (ReturnCode.isCancel(returnCode)) {
@@ -368,6 +375,13 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
         title.value = "合成失败";
       }
     });
+  }
+
+  notification(String title) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics = AndroidNotificationDetails('1001', 'download',
+        channelDescription: 'video download hint', importance: Importance.max, priority: Priority.high, ticker: 'ticker');
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(android: androidPlatformChannelSpecifics);
+    await flutterLocalNotificationsPlugin.show(0, title, "下载完成", platformChannelSpecifics);
   }
 
   @override
@@ -470,6 +484,65 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
     if (result['isSuccess']) {
       Toast.show("保存视频成功，保存路径为${result['filePath']}", duration: Toast.lengthShort, gravity: Toast.bottom);
     }
+  }
+
+  initNotification() async {
+    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('app_icon');
+    final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings(
+      requestSoundPermission: false,
+      requestBadgePermission: false,
+      requestAlertPermission: false,
+      onDidReceiveLocalNotification: onDidReceiveLocalNotification,
+    );
+    const MacOSInitializationSettings initializationSettingsMacOS =
+        MacOSInitializationSettings(requestAlertPermission: false, requestBadgePermission: false, requestSoundPermission: false);
+    final InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid, iOS: initializationSettingsIOS, macOS: initializationSettingsMacOS);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings, onSelectNotification: onSelectNotification);
+
+    final bool? result =
+        await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            );
+  }
+
+  void onDidReceiveLocalNotification(int id, String? title, String? body, String? payload) async {
+    // display a dialog with the notification details, tap ok to go to another page
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(title ?? ""),
+        content: Text(body ?? ""),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            child: const Text('Ok'),
+            onPressed: () async {
+              Navigator.of(context, rootNavigator: true).pop();
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BDownloadPage(),
+                ),
+              );
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  void onSelectNotification(String? payload) async {
+    if (payload != null) {
+      debugPrint('notification payload: $payload');
+    }
+    await Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (context) => const BDownloadPage()),
+    );
   }
 }
 

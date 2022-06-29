@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:download_utils/res/values/PColors.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:toast/toast.dart';
 import './ui/page/page.dart';
