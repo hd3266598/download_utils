@@ -522,7 +522,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
             child: const Text('Ok'),
             onPressed: () async {
               Navigator.of(context, rootNavigator: true).pop();
-              await Navigator.push(
+              await Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) => const BDownloadPage(),
@@ -539,7 +539,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
     if (payload != null) {
       debugPrint('notification payload: $payload');
     }
-    await Navigator.push(
+    await Navigator.pushReplacement(
       context,
       MaterialPageRoute<void>(builder: (context) => const BDownloadPage()),
     );
