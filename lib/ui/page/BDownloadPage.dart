@@ -87,8 +87,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                     print(jkC.text);
                   }
                   // String url = "https://b23.tv/MxNCZF0";
-                  _queryInfo(
-                      "https://www.bilibili.com/video/BV1gt4y1a7sk?spm_id_from=333.851.b_7265636f6d6d656e64.1&vd_source=900781aff2a6afbfe49aa14df9aba3c4");
+                  _queryInfo(jkC.text);
                 },
                 child: const Text("解析"))
           ],
