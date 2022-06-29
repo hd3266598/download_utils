@@ -20,7 +20,7 @@ class DownloadFile {
 
   /// 断点下载大文件
   static Future<void> download({
-    required Uri baseUri,
+    required String baseUri,
     required String url,
     required String savePath,
     ProgressCallback? onReceiveProgress,

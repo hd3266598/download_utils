@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:typed_data';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:download_utils/base/_base_widget.dart';
+import 'package:download_utils/model/DownloadBean.dart';
 import 'package:download_utils/model/VideoBean.dart';
 import 'package:download_utils/ui/page/page.dart';
 import 'package:download_utils/utils/common/DownloadFile.dart';
@@ -48,6 +50,13 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
   //下载的视频和音频
   ValueNotifier<String> title = ValueNotifier("");
 
+  //定义一个newIsolate
+  late Isolate newIsolate;
+
+//定义一个newIsolateSendPort, 该newIsolateSendPort需要让rootIsolate持有，
+//这样在rootIsolate中就能利用newIsolateSendPort向newIsolate发送消息
+  late SendPort newIsolateSendPort;
+
   @override
   Widget buildWidget(BuildContext context) {
     return Container(
@@ -74,7 +83,8 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                     print(jkC.text);
                   }
                   // String url = "https://b23.tv/MxNCZF0";
-                  _queryInfo(jkC.text);
+                  _queryInfo(
+                      "https://www.bilibili.com/video/BV1gt4y1a7sk?spm_id_from=333.851.b_7265636f6d6d656e64.1&vd_source=900781aff2a6afbfe49aa14df9aba3c4");
                 },
                 child: const Text("解析"))
           ],
@@ -239,7 +249,10 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
 
   _queryInfo(String url) async {
     Response data = await DownloadFile.getDio().get(url);
-    var realUri = data.redirects.first.location;
+    var realUri = Uri.parse(url);
+    if (data.isRedirect == true) {
+      realUri = data.redirects.first.location;
+    }
     Response response = await DownloadFile.getDio().getUri(realUri);
     var document = parse(response.data);
     var title = document.querySelector("title");
@@ -254,78 +267,20 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
           var info = data.substring(tag.length, data.length);
           var bean = VideoBean.fromJson(jsonDecode(info));
           if (bean.data != null) {
-            _download(name, realUri, bean.data!);
+            _download(name, realUri.toString(), bean.data!);
           }
         }
       }
     }
   }
 
-  _download(String name, Uri realUri, Data data, [int accQuality = 0]) {
+  _download(String name, String realUri, Data data, [int accQuality = 0]) {
     var quality = data.acceptDescription![accQuality];
     var duration = data.dash?.duration ?? 0;
     var videoUrl = data.dash?.video![accQuality].baseUrl ?? "";
     var audioUrl = data.dash?.audio![accQuality].baseUrl ?? "";
     print("当前视频清晰度为{$quality}，时长{${duration / 60}}分{${duration % 60}}秒");
-    _downloadSingle(name, realUri, videoUrl, audioUrl);
-  }
-
-  _downloadSingle(String name, Uri realUri, String videoUrl, String audioUrl) async {
-    var dir = await getApplicationDocumentsDirectory();
-    var videoPath = "${dir.path}/$name-video.mp4";
-    var audioPath = "${dir.path}/$name-audio.mp4";
-    var path = "${dir.path}/$name.mp4";
-    print("视频路径：$videoPath，音频路径：$audioPath，输出路径：$path");
-    title.value = "解析视频";
-    DownloadFile.download(
-        baseUri: realUri,
-        url: videoUrl,
-        savePath: videoPath,
-        onReceiveProgress: (count, total) {
-          process.value = count / total;
-        },
-        done: () {
-          print("视频下载完成");
-          title.value = "解析音频";
-          DownloadFile.download(
-              baseUri: realUri,
-              url: audioUrl,
-              savePath: audioPath,
-              onReceiveProgress: (count, total) {
-                process.value = count / total;
-              },
-              done: () {
-                print("音频下载完成");
-                print("开始合成");
-                title.value = "音视频合成";
-                var command = "-i $videoPath -i $audioPath  -c copy $path -y";
-                FFmpegKit.execute(command).then((session) async {
-                  final returnCode = await session.getReturnCode();
-                  // final reason = await session.getFailStackTrace();
-                  // print(returnCode);
-                  // print(reason);
-                  if (ReturnCode.isSuccess(returnCode)) {
-                    print("合并成功");
-                    title.value = "合成完毕";
-                    var video = File(videoPath);
-                    if (await video.exists()) {
-                      await video.delete();
-                    }
-                    var audio = File(audioPath);
-                    if (await audio.exists()) {
-                      await audio.delete();
-                    }
-                    _list.add(LocalVideo(name, path, await _loadThumbnail(path)));
-                    setState(() {});
-                  } else if (ReturnCode.isCancel(returnCode)) {
-                    print("取消合并");
-                  } else {
-                    print("合并失败");
-                    title.value = "合成失败";
-                  }
-                });
-              });
-        });
+    download(name, realUri, videoUrl, audioUrl);
   }
 
   @override
@@ -334,6 +289,8 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
     _judgeTen();
     //刷新本地视频数据
     _refreshData();
+    //
+    establishConn();
   }
 
   @override
@@ -343,6 +300,74 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
   void onResume() {
     //获取粘贴板中的文本
     _judgePlatformInfo();
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    newIsolate.kill();
+  }
+
+  void download(String name, String realUri, String videoUrl, String audioUrl) async {
+    var dir = await getApplicationDocumentsDirectory();
+    var videoPath = "${dir.path}/$name-video.mp4";
+    var audioPath = "${dir.path}/$name-audio.mp4";
+    var path = "${dir.path}/$name.mp4";
+    print("视频路径：$videoPath，音频路径：$audioPath，输出路径：$path");
+    newIsolateSendPort.send(DownloadBean(name, realUri, videoUrl, audioUrl, videoPath, audioPath, path));
+  }
+
+  //特别需要注意:establishConn执行环境是rootIsolate
+  void establishConn() async {
+    //第1步: 默认执行环境下是rootIsolate，所以创建的是一个rootIsolateReceivePort
+    ReceivePort rootIsolateReceivePort = ReceivePort();
+    //第2步: 获取rootIsolateSendPort
+    SendPort rootIsolateSendPort = rootIsolateReceivePort.sendPort;
+    //第3步: 创建一个newIsolate实例，并把rootIsolateSendPort作为参数传入到newIsolate中，为的是让newIsolate中持有rootIsolateSendPort, 这样在newIsolate中就能向rootIsolate发送消息了
+    newIsolate = await Isolate.spawn(createNewIsolateContext,
+        rootIsolateSendPort); //注意createNewIsolateContext这个函数执行环境就会变为newIsolate, rootIsolateSendPort就是createNewIsolateContext回调函数的参数
+    //第7步: 通过rootIsolateReceivePort接收到来自newIsolate的消息，所以可以注意到这里是await 因为是异步消息
+    //只不过这个接收到的消息是newIsolateSendPort, 最后赋值给全局newIsolateSendPort，这样rootIsolate就持有newIsolate的SendPort
+    rootIsolateReceivePort.listen((message) {
+      if (message is double) {
+        process.value = message;
+      } else if (message is String) {
+        title.value = message;
+      } else if (message is DownloadBean) {
+        mergeVideoAudio(message);
+      } else if (message is SendPort) {
+        newIsolateSendPort = message;
+      }
+    });
+  }
+
+  Future<void> mergeVideoAudio(DownloadBean downloadBean) async {
+    var command = "-i ${downloadBean.videoPath} -i ${downloadBean.audioPath}  -c copy ${downloadBean.path} -y";
+    FFmpegKit.execute(command).then((session) async {
+      final returnCode = await session.getReturnCode();
+      // final reason = await session.getFailStackTrace();
+      // print(returnCode);
+      // print(reason);
+      if (ReturnCode.isSuccess(returnCode)) {
+        print("合并成功");
+        title.value = "合成完毕";
+        var video = File(downloadBean.videoPath);
+        if (await video.exists()) {
+          await video.delete();
+        }
+        var audio = File(downloadBean.audioPath);
+        if (await audio.exists()) {
+          await audio.delete();
+        }
+        _list.add(LocalVideo(downloadBean.name, downloadBean.path, await _loadThumbnail(downloadBean.path)));
+        setState(() {});
+      } else if (ReturnCode.isCancel(returnCode)) {
+        print("取消合并");
+      } else {
+        print("合并失败");
+        title.value = "合成失败";
+      }
+    });
   }
 
   @override
@@ -446,4 +471,46 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
       Toast.show("保存视频成功，保存路径为${result['filePath']}", duration: Toast.lengthShort, gravity: Toast.bottom);
     }
   }
+}
+
+//特别需要注意:createNewIsolateContext执行环境是newIsolate
+void createNewIsolateContext(SendPort rootIsolateSendPort) async {
+  //第4步: 注意callback这个函数执行环境就会变为newIsolate, 所以创建的是一个newIsolateReceivePort
+  ReceivePort newIsolateReceivePort = ReceivePort();
+  //第5步: 获取newIsolateSendPort, 有人可能疑问这里为啥不是直接让全局newIsolateSendPort赋值，注意这里执行环境不是rootIsolate
+  SendPort newIsolateSendPort = newIsolateReceivePort.sendPort;
+  //第6步: 特别需要注意这里，这里是利用rootIsolateSendPort向rootIsolate发送消息，只不过发送消息是newIsolate的SendPort, 这样rootIsolate就能拿到newIsolate的SendPort
+  rootIsolateSendPort.send(newIsolateSendPort);
+
+  newIsolateReceivePort.listen((message) {
+    var bean = message as DownloadBean;
+    downloadSingle(bean, rootIsolateSendPort);
+  });
+}
+
+downloadSingle(DownloadBean downloadBean, SendPort rootIsolateSendPort) async {
+  rootIsolateSendPort.send("解析视频");
+  DownloadFile.download(
+      baseUri: downloadBean.realUri,
+      url: downloadBean.videoUrl,
+      savePath: downloadBean.videoPath,
+      onReceiveProgress: (count, total) {
+        rootIsolateSendPort.send(count / total);
+      },
+      done: () {
+        print("视频下载完成");
+        rootIsolateSendPort.send("解析音频");
+        DownloadFile.download(
+            baseUri: downloadBean.realUri,
+            url: downloadBean.audioUrl,
+            savePath: downloadBean.audioPath,
+            onReceiveProgress: (count, total) {
+              rootIsolateSendPort.send(count / total);
+            },
+            done: () {
+              print("音频下载完成");
+              print("开始合成");
+              rootIsolateSendPort.send(downloadBean);
+            });
+      });
 }
