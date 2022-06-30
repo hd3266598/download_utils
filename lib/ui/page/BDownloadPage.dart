@@ -73,7 +73,7 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                     print(jkC.text);
                   }
                   // String url = "https://b23.tv/MxNCZF0";
-                  _queryInfo("https://b23.tv/MxNCZF0");
+                  _queryInfo(jkC.text);
                 },
                 child: const Text("解析"))
           ],
@@ -181,6 +181,9 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                                 )
                               ],
                             )),
+                            const SizedBox(
+                              width: 10,
+                            ),
                             Column(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [DownloadProgress(progress: value.videoProgress), DownloadProgress(progress: value.audioProgress)],
