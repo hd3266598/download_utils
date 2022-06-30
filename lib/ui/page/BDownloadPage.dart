@@ -161,6 +161,12 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
                                           const BoxDecoration(color: PColors.theme_green, borderRadius: BorderRadius.all(Radius.circular(10))),
                                       child: InkWell(
                                         onTap: () async {
+                                          if (value.videoId != null) {
+                                            FlutterDownloader.remove(taskId: value.videoId!, shouldDeleteContent: true);
+                                          }
+                                          if (value.audioId != null) {
+                                            FlutterDownloader.remove(taskId: value.audioId!, shouldDeleteContent: true);
+                                          }
                                           var file = File(value.path!);
                                           if (await file.exists()) {
                                             file.delete();
