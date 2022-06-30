@@ -2,20 +2,53 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-class LocalVideo extends ChangeNotifier {
+import '../ui/item/DownloadProgress.dart';
+
+class LocalVideo {
   String? _title;
   String? _path;
-  Uint8List? _bitmap;
+  String? _videoPath;
+  String? _audioPath;
+  Uint8List? bitmap;
 
-  LocalVideo([String? message, String? session, Uint8List? bitmap]) {
-    _title = message;
-    _path = session;
-    _bitmap = bitmap;
+  //视频下载id
+  String? _videoId;
+
+  //音频下载id
+  String? _audioId;
+
+  //视频下载进度
+  ValueNotifier<double> videoProgress = ValueNotifier(0);
+
+  //音频下载进度
+  ValueNotifier<double> audioProgress = ValueNotifier(0);
+
+  LocalVideo({String? title, String? path, String? videoId, String? audioId, String? videoPath, String? audioPath}) {
+    _title = title;
+    _path = path;
+    _videoId = videoId;
+    _audioId = audioId;
+    _videoPath = videoPath;
+    _audioPath = audioPath;
   }
 
   String? get title => _title;
 
   String? get path => _path;
 
-  Uint8List get bitmap => _bitmap ?? Uint8List(0);
+  String? get videoPath => _videoPath;
+
+  String? get audioPath => _audioPath;
+
+  String? get videoId => _videoId;
+
+  String? get audioId => _audioId;
+
+  updateVideo(double progress) {
+    videoProgress.value = progress;
+  }
+
+  updateAudio(double progress) {
+    audioProgress.value = progress;
+  }
 }
