@@ -214,9 +214,9 @@ class _BDownloadState extends BaseWidgetState<BDownloadPage> {
     return await VideoThumbnail.thumbnailData(
       video: path,
       imageFormat: ImageFormat.JPEG,
-      maxWidth: 150,
+      maxWidth: 100,
       // specify the width of the thumbnail, let the height auto-scaled to keep the source aspect ratio
-      maxHeight: 150,
+      maxHeight: 100,
       quality: 100,
     );
   }
