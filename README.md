@@ -12,5 +12,6 @@ b站视频只试验了非会员视频（因为穷，嘿嘿）
 
 到此就结束了，如果要分享或者保存到网盘，就点一下视频的同步，会同步到你的相册里，接下来就不用我说了吧。
 
-本项目只允许个人测试使用，请勿商业化，谢谢！（项目里有Android的apk->app-release.apk，可以先下载试用）
+本项目只允许个人测试使用，请勿商业化，谢谢！（可以先下载试用）
 
+[Android](https://raw.githubusercontent.com/hd3266598/download_utils/main/app-release.apk)
