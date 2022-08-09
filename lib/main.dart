@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:download_utils/res/values/PColors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:toast/toast.dart';
 import './ui/page/page.dart';
@@ -24,7 +25,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '视频下载',
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('zh'),
+        Locale('ar'),
+        Locale('ja'),
+      ],
+      locale: const Locale('zh'),
+      title: '个人助手',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -37,9 +48,10 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: '视频下载'),
+      home: const MyHomePage(title: '个人助手'),
       routes: <String, WidgetBuilder>{
         '/BDownload': (BuildContext context) => const BDownloadPage(),
+        '/BodyRecord': (BuildContext context) => const BodyRecordPage(),
       },
     );
   }
@@ -103,23 +115,10 @@ class _MyHomePageState extends State<MyHomePage> {
           // center the children vertically; the main axis here is the vertical
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            InkWell(
-              onTap: () => Navigator.pushNamed(context, "/BDownload"),
-              child: DecoratedBox(
-                decoration: const BoxDecoration(color: PColors.theme_green, borderRadius: BorderRadius.all(Radius.circular(20))),
-                child: Container(
-                  width: 125,
-                  height: 40,
-                  alignment: Alignment.center,
-                  child: const Text(
-                    "B站",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            )
+            ElevatedButton(onPressed: () => Navigator.pushNamed(context, "/BDownload"), child: const Text("B站下载")),
+            ElevatedButton(onPressed: () => Navigator.pushNamed(context, "/BodyRecord"), child: const Text("体温记录"))
           ],
         ),
       ),
