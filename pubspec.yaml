@@ -97,6 +97,15 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
 
+  # json序列化反序列化
+  # 配合工具：https://caijinglong.github.io/json2dart/index_ch.html
+  json_serializable: ^6.2.0
+
+  # 生成Dart代码文件
+  # 配合使用命令：flutter packages pub run build_runner build
+  # 配合使用命令：flutter packages pub run build_runner watch
+  build_runner: ^2.0.6
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

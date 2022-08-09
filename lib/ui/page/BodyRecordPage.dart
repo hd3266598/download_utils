@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
+import '../../model/BodyRecordUtils.dart';
 import '../../res/values/PColors.dart';
 
 class BodyRecordPage extends BaseWidget {
@@ -20,8 +21,8 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
   //文本框controller
   TextEditingController jkC = TextEditingController();
 
-  //
-  String date = formatDate(DateTime.now(), [yyyy, '-', mm, '-', dd]);
+  //日期
+  DateTime date = DateTime.now();
 
   @override
   Widget buildWidget(BuildContext context) {
@@ -37,7 +38,7 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                 Expanded(
                     child: TextField(
                   maxLines: 1,
-                  keyboardType: TextInputType.phone,
+                  keyboardType: TextInputType.number,
                   controller: jkC,
                   decoration: const InputDecoration(
                       hintText: "温度",
@@ -63,7 +64,7 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                                     showActionButtons: true,
                                     onSubmit: (Object? value) {
                                       setState(() {
-                                        date = formatDate(DateTime.parse(value.toString()), [yyyy, '-', mm, '-', dd]);
+                                        date = DateTime.parse(value.toString());
                                       });
                                       Navigator.pop(context);
                                     },
@@ -74,7 +75,7 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                                 ));
                               });
                         },
-                        child: Text(date))),
+                        child: Text(formatDate(date, [yyyy, '-', mm, '-', dd])))),
               ],
             ),
           ),
@@ -113,7 +114,14 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
   }
 
   @override
-  void onCreate() {}
+  void onCreate() async{
+    var _user = await BodyRecordUtils.getInstance().user;
+    Future.delayed(Duration.zero,(){
+      if (_user == null) {
+
+      }
+    });
+  }
 
   @override
   void onPause() {}

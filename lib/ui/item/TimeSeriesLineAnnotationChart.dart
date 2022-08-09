@@ -133,7 +133,7 @@ class _SelectionCallbackState extends State<SelectionCallbackExample> {
 /// Sample time series data type.
 class TimeSeriesSales {
   final DateTime time;
-  final int sales;
+  final double sales;
 
   TimeSeriesSales(this.time, this.sales);
 }
