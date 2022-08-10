@@ -5,4 +5,5 @@ import 'package:flutter/foundation.dart';
 
 LocalVideo videoNotifier = LocalVideo();
 
-ValueNotifier<HashMap<DateTime, double>?> notifier = ValueNotifier(null);
+ValueNotifier<HashMap<String, double>?> bodyRecordNotifier = ValueNotifier(null);
+

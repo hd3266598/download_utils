@@ -37,16 +37,16 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
               children: [
                 Expanded(
                     child: TextField(
-                  maxLines: 1,
-                  keyboardType: TextInputType.number,
-                  controller: jkC,
-                  decoration: const InputDecoration(
-                      hintText: "温度",
-                      border: InputBorder.none,
-                      hintStyle: TextStyle(color: PColors.hint_color),
-                      filled: true,
-                      fillColor: PColors.app_background),
-                )),
+                      maxLines: 1,
+                      keyboardType: TextInputType.number,
+                      controller: jkC,
+                      decoration: const InputDecoration(
+                          hintText: "温度",
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(color: PColors.hint_color),
+                          filled: true,
+                          fillColor: PColors.app_background),
+                    )),
                 const SizedBox(
                   width: 10,
                 ),
@@ -58,21 +58,21 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                               builder: (context) {
                                 return Dialog(
                                     child: Scaffold(
-                                  body: SfDateRangePicker(
-                                    view: DateRangePickerView.month,
-                                    showTodayButton: true,
-                                    showActionButtons: true,
-                                    onSubmit: (Object? value) {
-                                      setState(() {
-                                        date = DateTime.parse(value.toString());
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                                    onCancel: () {
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                ));
+                                      body: SfDateRangePicker(
+                                        view: DateRangePickerView.month,
+                                        showTodayButton: true,
+                                        showActionButtons: true,
+                                        onSubmit: (Object? value) {
+                                          setState(() {
+                                            date = DateTime.parse(value.toString());
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                        onCancel: () {
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ));
                               });
                         },
                         child: Text(formatDate(date, [yyyy, '-', mm, '-', dd])))),
@@ -88,23 +88,23 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                   child: TextButton(
                       onPressed: () {
                         if (kDebugMode) {
-                          print(jkC.text);
+                          print(date.toString());
                         }
-                        // _queryInfo(jkC.text);
+                        BodyRecordUtils.getInstance().add(date.toString(), double.tryParse(jkC.text) ?? 0.0);
                       },
                       child: const Text("添加"))),
               Expanded(
                   child: TextButton(
                       onPressed: () {
                         if (kDebugMode) {
-                          print(jkC.text);
+                          print(date.toString());
                         }
-                        // _queryInfo(jkC.text);
+                        BodyRecordUtils.getInstance().delete(date.toString());
                       },
                       child: const Text("删除"))),
             ],
           ),
-          Expanded(child: SelectionCallbackExample.withSampleData())
+          // Expanded(child: )
         ]));
   }
 
@@ -114,13 +114,8 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
   }
 
   @override
-  void onCreate() async{
-    var _user = await BodyRecordUtils.getInstance().user;
-    Future.delayed(Duration.zero,(){
-      if (_user == null) {
-
-      }
-    });
+  void onCreate() async {
+    BodyRecordUtils.getInstance().init();
   }
 
   @override
