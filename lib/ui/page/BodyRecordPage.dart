@@ -1,12 +1,12 @@
 import 'package:date_format/date_format.dart';
 import 'package:download_utils/base/_base_widget.dart';
-import 'package:download_utils/ui/item/TimeSeriesLineAnnotationChart.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 import '../../model/BodyRecordUtils.dart';
 import '../../res/values/PColors.dart';
+import '../item/TimeSeriesLineAnnotationChart.dart';
 
 class BodyRecordPage extends BaseWidget {
   const BodyRecordPage({super.key});
@@ -37,16 +37,16 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
               children: [
                 Expanded(
                     child: TextField(
-                      maxLines: 1,
-                      keyboardType: TextInputType.number,
-                      controller: jkC,
-                      decoration: const InputDecoration(
-                          hintText: "温度",
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(color: PColors.hint_color),
-                          filled: true,
-                          fillColor: PColors.app_background),
-                    )),
+                  maxLines: 1,
+                  keyboardType: TextInputType.number,
+                  controller: jkC,
+                  decoration: const InputDecoration(
+                      hintText: "温度",
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(color: PColors.hint_color),
+                      filled: true,
+                      fillColor: PColors.app_background),
+                )),
                 const SizedBox(
                   width: 10,
                 ),
@@ -58,21 +58,21 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                               builder: (context) {
                                 return Dialog(
                                     child: Scaffold(
-                                      body: SfDateRangePicker(
-                                        view: DateRangePickerView.month,
-                                        showTodayButton: true,
-                                        showActionButtons: true,
-                                        onSubmit: (Object? value) {
-                                          setState(() {
-                                            date = DateTime.parse(value.toString());
-                                          });
-                                          Navigator.pop(context);
-                                        },
-                                        onCancel: () {
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    ));
+                                  body: SfDateRangePicker(
+                                    view: DateRangePickerView.month,
+                                    showTodayButton: true,
+                                    showActionButtons: true,
+                                    onSubmit: (Object? value) {
+                                      setState(() {
+                                        date = DateTime.parse(value.toString());
+                                      });
+                                      Navigator.pop(context);
+                                    },
+                                    onCancel: () {
+                                      Navigator.pop(context);
+                                    },
+                                  ),
+                                ));
                               });
                         },
                         child: Text(formatDate(date, [yyyy, '-', mm, '-', dd])))),
@@ -102,6 +102,14 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                         BodyRecordUtils.getInstance().delete(date.toString());
                       },
                       child: const Text("删除"))),
+              Expanded(
+                  child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                          return SelectionCallbackExample.withSampleData();
+                        }));
+                      },
+                      child: const Text("折线图"))),
             ],
           ),
           // Expanded(child: )

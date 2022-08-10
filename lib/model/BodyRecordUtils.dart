@@ -1,9 +1,10 @@
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:math';
+import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:date_format/date_format.dart';
 
+import '../ui/item/TimeSeriesLineAnnotationChart.dart';
 import '../utils/db/DbHelper.dart';
-import 'Constants.dart';
 
 class BodyRecordUtils {
   BodyRecordUtils._();
@@ -40,11 +41,6 @@ class BodyRecordUtils {
   saveUser(HashMap<String, double>? value) async {
     _user = value;
     await DbHelper.getInstance().add(_userKey, json.encode(value));
-    if (bodyRecordNotifier.value == _user) {
-      bodyRecordNotifier.notifyListeners();
-    } else {
-      bodyRecordNotifier.value = _user;
-    }
   }
 
   add(String key, double value) {
@@ -59,5 +55,23 @@ class BodyRecordUtils {
       _user?.remove(key);
       saveUser(_user);
     }
+  }
+
+  Future<List<charts.Series<TimeSeriesSales, DateTime>>> formData() async {
+    var list = <TimeSeriesSales>[];
+    var data = await user;
+    if (data != null) {
+      data.forEach((key, value) {
+        list.add(TimeSeriesSales(DateTime.parse(key), value));
+      });
+    }
+    return [
+      charts.Series<TimeSeriesSales, DateTime>(
+        id: 'body',
+        domainFn: (TimeSeriesSales sales, _) => sales.time,
+        measureFn: (TimeSeriesSales sales, _) => sales.sales,
+        data: list,
+      ),
+    ];
   }
 }

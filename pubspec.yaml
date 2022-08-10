@@ -79,6 +79,8 @@ dependencies:
   sqflite: ^2.0.2+1
 
   shared_preferences: ^2.0.15
+  #折线图
+  charts_flutter: ^0.12.0
   #  日期选择期
   syncfusion_flutter_datepicker: ^20.2.43
   #  日期格式化
