@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:date_format/date_format.dart';
 import 'package:download_utils/base/_base_widget.dart';
 import 'package:flutter/foundation.dart';
@@ -24,10 +26,12 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
   //日期
   DateTime date = DateTime.now();
 
+  //数据
+  LinkedHashMap<String, double>? beans;
+
   @override
   Widget buildWidget(BuildContext context) {
     return Container(
-        color: Colors.white,
         padding: const EdgeInsets.all(10),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           SizedBox(
@@ -53,27 +57,11 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                 Expanded(
                     child: OutlinedButton(
                         onPressed: () {
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return Dialog(
-                                    child: Scaffold(
-                                  body: SfDateRangePicker(
-                                    view: DateRangePickerView.month,
-                                    showTodayButton: true,
-                                    showActionButtons: true,
-                                    onSubmit: (Object? value) {
-                                      setState(() {
-                                        date = DateTime.parse(value.toString());
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                                    onCancel: () {
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                ));
-                              });
+                          showDatePick(context, (value) {
+                            setState(() {
+                              date = value;
+                            });
+                          });
                         },
                         child: Text(formatDate(date, [yyyy, '-', mm, '-', dd])))),
               ],
@@ -90,18 +78,14 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                         if (kDebugMode) {
                           print(date.toString());
                         }
-                        BodyRecordUtils.getInstance().add(date.toString(), double.tryParse(jkC.text) ?? 0.0);
+                        if (beans != null) {
+                          setState(() {
+                            beans![date.toString()] = double.tryParse(jkC.text) ?? 0.0;
+                            BodyRecordUtils.getInstance().saveUser(beans);
+                          });
+                        }
                       },
                       child: const Text("添加"))),
-              Expanded(
-                  child: TextButton(
-                      onPressed: () {
-                        if (kDebugMode) {
-                          print(date.toString());
-                        }
-                        BodyRecordUtils.getInstance().delete(date.toString());
-                      },
-                      child: const Text("删除"))),
               Expanded(
                   child: TextButton(
                       onPressed: () {
@@ -112,8 +96,103 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                       child: const Text("折线图"))),
             ],
           ),
-          // Expanded(child: )
+          Expanded(
+              child: ListView.separated(
+            padding: const EdgeInsets.only(top: 0),
+            physics: const BouncingScrollPhysics(),
+            itemBuilder: (context, index) {
+              var data = beans?.entries.elementAt(index);
+              return DecoratedBox(
+                decoration: const BoxDecoration(color: Colors.white),
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "日期：${data?.key}",
+                        style: const TextStyle(color: PColors.second_text_color),
+                      ),
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      Text("体温：${data?.value}"),
+                      const SizedBox(
+                        width: 10,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          DecoratedBox(
+                            decoration: const BoxDecoration(color: PColors.btn_bcg, borderRadius: BorderRadius.all(Radius.circular(10))),
+                            child: InkWell(
+                              onTap: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        content: const Text("是否删除该项记录？"),
+                                        actions: [
+                                          TextButton(child: const Text("取消"), onPressed: () => Navigator.pop(context)),
+                                          TextButton(
+                                              child: const Text("确定"),
+                                              onPressed: () {
+                                                setState(() {
+                                                  beans?.remove(data?.key);
+                                                  BodyRecordUtils.getInstance().saveUser(beans);
+                                                });
+                                                Navigator.pop(context);
+                                              }),
+                                        ],
+                                      );
+                                    });
+                              },
+                              child: Container(
+                                width: 50,
+                                height: 25,
+                                alignment: Alignment.center,
+                                child: const Text(
+                                  "删除",
+                                  style: TextStyle(color: PColors.text_red),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              );
+            },
+            separatorBuilder: (context, index) {
+              return const Divider(
+                height: 1,
+              );
+            },
+            itemCount: beans?.length ?? 0,
+          ))
         ]));
+  }
+
+  void showDatePick(BuildContext context, Function(DateTime) func) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+              child: Scaffold(
+            body: SfDateRangePicker(
+              view: DateRangePickerView.month,
+              showTodayButton: true,
+              showActionButtons: true,
+              onSubmit: (Object? value) {
+                Navigator.pop(context);
+                func.call(DateTime.parse(value.toString()));
+              },
+            ),
+          ));
+        });
   }
 
   @override
@@ -122,8 +201,13 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
   }
 
   @override
-  void onCreate() async {
-    BodyRecordUtils.getInstance().init();
+  void onCreate() {
+    BodyRecordUtils.getInstance().init((value) {
+      setState(() {
+        beans = value;
+        jkC.text = beans?.entries.last.value.toString() ?? "";
+      });
+    });
   }
 
   @override

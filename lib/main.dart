@@ -1,11 +1,12 @@
 import 'dart:io';
 
-import 'package:download_utils/res/values/PColors.dart';
+import 'package:download_utils/utils/db/DbHelper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:toast/toast.dart';
+
 import './ui/page/page.dart';
 
 void main() {
@@ -15,6 +16,9 @@ void main() {
       debug: true, // optional: set to false to disable printing logs to console (default: true)
       ignoreSsl: true // option: set to false to disable working with http links (default: false)
       );
+  //数据库初始化
+  DbHelper.getInstance().init();
+
   runApp(const MyApp());
 }
 

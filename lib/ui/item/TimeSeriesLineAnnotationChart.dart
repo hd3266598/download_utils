@@ -11,11 +11,12 @@
 ///
 /// See [SelectNearest] behavior on setting the different ways of triggering
 /// [SelectionModel] updates from hover & click events.
-import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:charts_flutter/flutter.dart';
+import 'package:download_utils/base/_base_widget.dart';
 import 'package:download_utils/model/BodyRecordUtils.dart';
 import 'package:flutter/material.dart';
 
-class SelectionCallbackExample extends StatefulWidget {
+class SelectionCallbackExample extends BaseWidget {
   final bool animate;
 
   const SelectionCallbackExample(this.animate, {super.key});
@@ -23,56 +24,24 @@ class SelectionCallbackExample extends StatefulWidget {
   /// Creates a [charts.TimeSeriesChart] with sample data and no transition.
   factory SelectionCallbackExample.withSampleData() {
     return const SelectionCallbackExample(
-      true,
+      false,
     );
   }
 
-  // We need a Stateful widget to build the selection details with the current
-  // selection as the state.
   @override
-  State<StatefulWidget> createState() => _SelectionCallbackState();
-
-  /// Create one series with sample hard coded data.
-  static List<charts.Series<TimeSeriesSales, DateTime>> _createSampleData() {
-    final us_data = [
-      TimeSeriesSales(DateTime(2017, 9, 19), 5),
-      TimeSeriesSales(DateTime(2017, 9, 26), 25),
-      TimeSeriesSales(DateTime(2017, 10, 3), 78),
-      TimeSeriesSales(DateTime(2017, 10, 10), 54),
-    ];
-
-    final uk_data = [
-      TimeSeriesSales(DateTime(2017, 9, 19), 15),
-      TimeSeriesSales(DateTime(2017, 9, 26), 33),
-      TimeSeriesSales(DateTime(2017, 10, 3), 68),
-      TimeSeriesSales(DateTime(2017, 10, 10), 48),
-    ];
-
-    return [
-      charts.Series<TimeSeriesSales, DateTime>(
-        id: 'US Sales',
-        domainFn: (TimeSeriesSales sales, _) => sales.time,
-        measureFn: (TimeSeriesSales sales, _) => sales.sales,
-        data: us_data,
-      ),
-      charts.Series<TimeSeriesSales, DateTime>(
-        id: 'UK Sales',
-        domainFn: (TimeSeriesSales sales, _) => sales.time,
-        measureFn: (TimeSeriesSales sales, _) => sales.sales,
-        data: uk_data,
-      )
-    ];
+  BaseWidgetState<BaseWidget> getState() {
+    return _SelectionCallbackState();
   }
 }
 
-class _SelectionCallbackState extends State<SelectionCallbackExample> {
+class _SelectionCallbackState extends BaseWidgetState<SelectionCallbackExample> {
   DateTime? _time;
   Map<String, num>? _measures;
 
   // Listens to the underlying selection changes, and updates the information
   // relevant to building the primitive legend like information under the
   // chart.
-  _onSelectionChanged(charts.SelectionModel model) {
+  _onSelectionChanged(SelectionModel model) {
     final selectedDatum = model.selectedDatum;
     DateTime? time;
     final measures = <String, num>{};
@@ -96,21 +65,27 @@ class _SelectionCallbackState extends State<SelectionCallbackExample> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<charts.Series<TimeSeriesSales, DateTime>>>(
+  Widget buildWidget(BuildContext context) {
+    return FutureBuilder<List<Series<TimeSeriesSales, DateTime>>>(
       builder: (context, snapshot) {
         var children = <Widget>[
-          SizedBox(
-              height: 150.0,
-              child: charts.TimeSeriesChart(
+          Expanded(
+              child: TimeSeriesChart(
                 snapshot.data ?? [],
                 animate: widget.animate,
                 selectionModels: [
-                  charts.SelectionModelConfig(
-                    type: charts.SelectionModelType.info,
+                  SelectionModelConfig(
+                    type: SelectionModelType.info,
                     changedListener: _onSelectionChanged,
                   )
                 ],
+                // Custom renderer configuration for the point series.
+                customSeriesRenderers: [
+                  PointRendererConfig(
+                    // ID used to link series to this renderer.
+                      customRendererId: 'customPoint')
+                ],
+
               )),
         ];
         // If there is a selection, then include the details.
@@ -124,6 +99,21 @@ class _SelectionCallbackState extends State<SelectionCallbackExample> {
       },
       future: BodyRecordUtils.getInstance().formData(),
     );
+  }
+
+  @override
+  void onCreate() {
+  }
+
+  @override
+  void onPause() {}
+
+  @override
+  void onResume() {}
+
+  @override
+  bool isAppBarShow() {
+    return false;
   }
 }
 
