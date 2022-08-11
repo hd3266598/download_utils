@@ -101,7 +101,7 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
             padding: const EdgeInsets.only(top: 0),
             physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
-              var data = beans?.entries.elementAt(index);
+              var data = beans?.entries.elementAt((beans?.length ?? 1) - 1 - index);
               return DecoratedBox(
                 decoration: const BoxDecoration(color: Colors.white),
                 child: Padding(
