@@ -1,7 +1,10 @@
 import 'dart:collection';
+import 'dart:io';
 
 import 'package:date_format/date_format.dart';
 import 'package:download_utils/base/_base_widget.dart';
+import 'package:download_utils/utils/common/FileUtils.dart';
+import 'package:download_utils/utils/toast/toast.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
@@ -94,6 +97,19 @@ class _BodyRecordPageState extends BaseWidgetState<BodyRecordPage> {
                         }));
                       },
                       child: const Text("折线图"))),
+              Expanded(
+                  child: TextButton(
+                      onPressed: () {
+                        var buff = StringBuffer("日期,温度\n");
+                        if (beans?.entries != null) {
+                          for (var element in beans!.entries) {
+                            buff.write("${formatDate(DateTime.parse(element.key), [yyyy, '-', mm, '-', dd])},${element.value}\n");
+                          }
+                          FileUtils.getInstance().writeToFile("小刘体温.txt", buff.toString());
+                          ToastUtils.showToastCenter("导出成功");
+                        }
+                      },
+                      child: const Text("导出"))),
             ],
           ),
           Expanded(
