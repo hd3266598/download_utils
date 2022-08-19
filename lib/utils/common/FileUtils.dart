@@ -12,8 +12,8 @@ class FileUtils {
   }
 
   Future<void> writeToFile(String fileName, String contents) async {
-    var documentPath = await getApplicationDocumentsDirectory();
-    var file = File("${documentPath.path}/$fileName");
+    var documentPath = Platform.isAndroid ? await getExternalStorageDirectory() : await getApplicationDocumentsDirectory();
+    var file = File("${documentPath?.path}/$fileName");
     if (await file.exists()) {
       file.delete();
     }
@@ -22,8 +22,8 @@ class FileUtils {
   }
 
   Future<String> readFromFile(String fileName) async {
-    var documentPath = await getApplicationDocumentsDirectory();
-    var file = File("${documentPath.path}/$fileName");
+    var documentPath = Platform.isAndroid ? await getExternalStorageDirectory() : await getApplicationDocumentsDirectory();
+    var file = File("${documentPath?.path}/$fileName");
     if (await file.exists()) {
       return file.readAsString();
     } else {
